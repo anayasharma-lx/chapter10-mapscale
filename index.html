@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Map Scale Explorer — Ganita Prakash Grade 8</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f4f0;--surface:#ffffff;--surface2:#f0ede8;
+  --border:#d8d4cc;--text:#1a1814;--text2:#5a5650;--text3:#9a958e;
+  --accent:#c0392b;--blue:#2c7be5;--green:#1a7a4a;
+  --font:'DM Sans',-apple-system,sans-serif;--mono:'DM Mono',ui-monospace,monospace;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;line-height:1.5}
+.page{max-width:920px;margin:0 auto;padding:32px 24px}
+.label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
+.title{font-size:22px;font-weight:700;margin-bottom:6px}
+.subtitle{font-size:14px;color:var(--text2);margin-bottom:24px;max-width:580px;line-height:1.55}
+.card{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px}
+.card-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:14px}
+
+.rf-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.rf-btn{padding:7px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-weight:500;color:var(--text2);background:var(--surface);cursor:pointer;font-family:var(--font);transition:all .12s}
+.rf-btn.active{background:var(--text);color:#fff;border-color:var(--text)}
+.rf-btn:hover:not(.active){border-color:var(--text)}
+.custom-rf{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.custom-rf input{padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:14px;background:var(--surface);color:var(--text);outline:none;width:160px}
+.custom-rf input:focus{border-color:var(--blue)}
+
+/* Layout */
+.main-layout{display:grid;grid-template-columns:1fr 270px;gap:20px;align-items:start}
+@media(max-width:680px){.main-layout{grid-template-columns:1fr}}
+
+/* Map */
+.map-wrap{border:1.5px solid var(--border);border-radius:10px;overflow:hidden;background:#cde8f4;position:relative}
+svg#map{display:block;width:100%;cursor:default}
+.city-g{cursor:pointer}
+.city-g circle{transition:r .12s, fill .12s}
+.city-g:hover circle{r:7;fill:#e08020}
+.city-g text{pointer-events:none;font-size:10px;font-family:'DM Sans',sans-serif;font-weight:600;fill:#1a1814}
+
+/* Sidebar */
+.sidebar{display:flex;flex-direction:column;gap:10px}
+.res-card{background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:13px 16px}
+.res-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:4px}
+.res-val{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--text)}
+.res-val.accent{color:var(--accent)}
+.res-val.blue{color:var(--blue)}
+
+.working{background:#fff8f0;border:1.5px solid #f0d8c0;border-radius:10px;padding:13px 16px;font-size:12.5px;color:#6b4400;line-height:1.7}
+.working .eq{font-family:var(--mono);display:block;font-size:12px;margin:2px 0}
+.working strong{color:#a05000}
+
+.ref-card{background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:13px 16px}
+.ref-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:10px}
+.ref-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border);gap:8px}
+.ref-row:last-child{border-bottom:none}
+.ref-km{font-family:var(--mono);font-weight:700;color:var(--blue);flex-shrink:0}
+
+.hint{font-size:11.5px;color:var(--text3);text-align:center;margin-top:8px;line-height:1.4;padding:0 4px}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="label">Chapter 3 · Proportional Reasoning – 2</div>
+  <div class="title">Map Scale Explorer</div>
+  <div class="subtitle">Click two cities to measure the distance between them. The Representative Fraction (RF) converts the map measurement to the real geographical distance.</div>
+
+  <div class="card">
+    <div class="card-title">Representative Fraction — 1 cm on this map = ? in reality</div>
+    <div class="rf-row">
+      <button class="rf-btn active" data-rf="6000000">1 : 60,00,000</button>
+      <button class="rf-btn" data-rf="1000000">1 : 10,00,000</button>
+      <button class="rf-btn" data-rf="500000">1 : 5,00,000</button>
+      <button class="rf-btn" data-rf="50000">1 : 50,000</button>
+    </div>
+    <div class="custom-rf">
+      <span style="font-size:13px;color:var(--text2)">Custom 1 :</span>
+      <input type="number" id="customRF" placeholder="e.g. 2500000">
+      <button class="rf-btn" id="btnApplyRF">Apply</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Map of India — click any two cities</div>
+    <div class="main-layout">
+      <div>
+        <div class="map-wrap">
+          <svg id="map" viewBox="0 0 500 580" xmlns="http://www.w3.org/2000/svg">
+            <!-- Ocean background -->
+            <rect x="0" y="0" width="500" height="580" fill="#cde8f4"/>
+            <!-- India landmass -->
+            <path d="M 23.1,257.7 L 30.7,245.3 L 24.6,238.2 L 33.8,225.8 L 50.7,213.4 L 52.2,195.6 L 64.5,179.7 L 66.0,170.8 L 66.0,156.6 L 89.0,140.6 L 108.9,122.9 L 124.3,114.0 L 133.5,99.8 L 145.7,89.2 L 165.7,75.0 L 173.3,64.4 L 185.6,59.0 L 204.0,51.9 L 219.3,46.6 L 242.3,43.1 L 265.3,37.7 L 296.0,41.3 L 319.0,51.9 L 334.3,64.4 L 349.7,99.8 L 464.7,153.1 L 467.7,183.2 L 441.7,201.0 L 426.3,211.6 L 403.3,224.0 L 391.1,236.5 L 386.5,254.2 L 395.7,259.5 L 392.6,270.2 L 388.0,280.8 L 354.3,271.9 L 340.5,277.3 L 319.0,289.7 L 309.8,300.3 L 303.7,312.7 L 286.8,325.2 L 277.6,335.8 L 268.4,348.2 L 254.6,362.4 L 239.3,376.6 L 222.4,389.0 L 211.7,401.5 L 207.1,413.9 L 207.1,428.1 L 208.6,436.9 L 207.1,449.4 L 200.9,472.4 L 199.4,484.8 L 167.2,532.7 L 164.1,534.5 L 156.5,525.6 L 147.3,507.9 L 145.7,495.5 L 135.0,481.3 L 128.9,467.1 L 124.3,454.7 L 118.1,436.9 L 115.1,421.0 L 110.5,410.3 L 105.9,397.9 L 101.3,380.2 L 98.2,366.0 L 93.6,348.2 L 92.1,334.0 L 93.6,321.6 L 95.1,312.7 L 64.5,305.6 L 50.7,298.5 L 43.0,295.0 L 35.3,286.1 L 32.3,279.0 L 27.7,271.9 L 26.1,266.6 L 23.1,257.7 Z"
+              fill="#c8d8a8" stroke="#7a9a5a" stroke-width="1.5" stroke-linejoin="round"/>
+            <!-- State border suggestion lines (major rivers approximate) -->
+            <!-- Measurement elements -->
+            <line id="mLine" x1="0" y1="0" x2="0" y2="0" stroke="#2c7be5" stroke-width="2.5" stroke-dasharray="7,5" opacity="0" pointer-events="none"/>
+            <text id="mLabel" x="0" y="0" text-anchor="middle" font-size="11" font-family="DM Mono,monospace" fill="#1a1814" font-weight="700" opacity="0" pointer-events="none"></text>
+            <circle id="pt1" cx="-999" cy="-999" r="10" fill="#2c7be5" stroke="white" stroke-width="2.5" opacity="0" pointer-events="none"/>
+            <circle id="pt2" cx="-999" cy="-999" r="10" fill="#c0392b" stroke="white" stroke-width="2.5" opacity="0" pointer-events="none"/>
+            <!-- Cities group (built by JS) -->
+            <g id="citiesG"></g>
+            <!-- Scale bar (calibrated to SVG units) -->
+            <g id="scaleBarG" transform="translate(20,558)">
+              <rect x="0" y="0" width="94" height="5" fill="#1a1814"/>
+              <rect x="0" y="0" width="47" height="5" fill="white"/>
+              <rect x="47" y="0" width="47" height="5" fill="#1a1814"/>
+              <line x1="0" y1="0" x2="0" y2="10" stroke="#1a1814" stroke-width="1.5"/>
+              <line x1="47" y1="0" x2="47" y2="10" stroke="#1a1814" stroke-width="1.5"/>
+              <line x1="94" y1="0" x2="94" y2="10" stroke="#1a1814" stroke-width="1.5"/>
+              <text id="scaleLeft" x="0" y="-4" text-anchor="middle" font-size="9" font-family="DM Mono,monospace" fill="#3a3430">0</text>
+              <text id="scaleMid" x="47" y="-4" text-anchor="middle" font-size="9" font-family="DM Mono,monospace" fill="#3a3430"></text>
+              <text id="scaleRight" x="94" y="-4" text-anchor="middle" font-size="9" font-family="DM Mono,monospace" fill="#3a3430"></text>
+            </g>
+          </svg>
+        </div>
+        <p class="hint">Click a first city (blue), then a second city (red). Click anywhere to reset. The real distance is calculated from the actual coordinates — accurate to within 1%.</p>
+      </div>
+
+      <div class="sidebar">
+        <div class="res-card"><div class="res-label">City 1</div><div class="res-val" id="rC1">—</div></div>
+        <div class="res-card"><div class="res-label">City 2</div><div class="res-val" id="rC2">—</div></div>
+        <div class="res-card"><div class="res-label">Map distance (at this RF)</div><div class="res-val blue" id="rMapCm">—</div></div>
+        <div class="res-card"><div class="res-label">Real straight-line distance</div><div class="res-val accent" id="rRealKm">—</div></div>
+        <div class="working" id="working" style="display:none"></div>
+        <div class="ref-card">
+          <div class="ref-title">Known distances for reference</div>
+          <div class="ref-row"><span>Bengaluru → Chennai</span><span class="ref-km">291 km</span></div>
+          <div class="ref-row"><span>Mangaluru → Chennai</span><span class="ref-km">585 km</span></div>
+          <div class="ref-row"><span>Delhi → Mumbai</span><span class="ref-km">1147 km</span></div>
+          <div class="ref-row"><span>Delhi → Kolkata</span><span class="ref-km">1303 km</span></div>
+          <div class="ref-row"><span>Mumbai → Chennai</span><span class="ref-km">1033 km</span></div>
+          <div class="ref-row"><span>Delhi → Hyderabad</span><span class="ref-km">1253 km</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// SVG coordinate system:
+// x = 20 + (lon - 68) / 30 * 460
+// y = 570 - (lat - 6) / 31 * 550
+// Inverse: lon = 68 + (x-20)/460*30,  lat = 6 + (570-y)/550*31
+
+const CITIES = [
+  {name:'Delhi',     x:161.2, y:168.9, lat:28.61, lon:77.21},
+  {name:'Mumbai',    x:94.8,  y:337.9, lat:19.08, lon:72.88},
+  {name:'Chennai',   x:208.1, y:444.4, lat:13.08, lon:80.27},
+  {name:'Kolkata',   x:332.2, y:276.0, lat:22.57, lon:88.36},
+  {name:'Bengaluru', x:167.0, y:446.3, lat:12.97, lon:77.59},
+  {name:'Hyderabad', x:180.8, y:367.9, lat:17.39, lon:78.49},
+  {name:'Jaipur',    x:139.4, y:199.0, lat:26.91, lon:75.79},
+  {name:'Ahmedabad', x:90.4,  y:267.9, lat:23.03, lon:72.59},
+  {name:'Lucknow',   x:218.6, y:200.1, lat:26.85, lon:80.95},
+  {name:'Nagpur',    x:190.0, y:301.2, lat:21.15, lon:79.09},
+  {name:'Patna',     x:282.8, y:222.3, lat:25.60, lon:85.14},
+  {name:'Kochi',     x:146.8, y:500.3, lat:9.93,  lon:76.27},
+  {name:'Mangaluru', x:124.9, y:448.1, lat:12.87, lon:74.84},
+  {name:'Pune',      x:109.9, y:347.9, lat:18.52, lon:73.86},
+  {name:'Varanasi',  x:250.0, y:227.2, lat:25.32, lon:83.00},
+  {name:'Amritsar',  x:125.3, y:115.3, lat:31.63, lon:74.87},
+  {name:'Bhopal',    x:164.3, y:263.8, lat:23.26, lon:77.41},
+];
+
+// SVG units per 1 cm on a printed 1:6000000 map ≈ 9.35
+// Derived by: svg_dist(Delhi-Mumbai)=181.6 / (haversine/60km per cm) = 181.6/19.12 = 9.50
+// Average across pairs ≈ 9.35 — we use this as the calibration
+const SVG_PER_CM_AT_REF_RF = 9.35;
+const REF_RF = 6000000;
+
+function haversine(lat1,lon1,lat2,lon2){
+  const R=6371, r=x=>x*Math.PI/180;
+  const dlat=r(lat2-lat1), dlon=r(lon2-lon1);
+  const a=Math.sin(dlat/2)**2+Math.cos(r(lat1))*Math.cos(r(lat2))*Math.sin(dlon/2)**2;
+  return R*2*Math.asin(Math.sqrt(a));
+}
+
+let rf=6000000, pt1=null, pt2=null;
+
+// Build city dots in SVG
+const g = document.getElementById('citiesG');
+CITIES.forEach(c => {
+  const cg = document.createElementNS('http://www.w3.org/2000/svg','g');
+  cg.setAttribute('class','city-g');
+
+  const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  dot.setAttribute('cx',c.x); dot.setAttribute('cy',c.y);
+  dot.setAttribute('r','5'); dot.setAttribute('fill','#c0392b');
+  dot.setAttribute('stroke','white'); dot.setAttribute('stroke-width','1.5');
+
+  // Label position — push right unless near right edge
+  const tx = c.x > 380 ? c.x - 7 : c.x + 7;
+  const anchor = c.x > 380 ? 'end' : 'start';
+  const lbl = document.createElementNS('http://www.w3.org/2000/svg','text');
+  lbl.setAttribute('x',tx); lbl.setAttribute('y',c.y-6);
+  lbl.setAttribute('text-anchor',anchor);
+  lbl.setAttribute('font-size','10'); lbl.setAttribute('font-family','DM Sans,sans-serif');
+  lbl.setAttribute('font-weight','600'); lbl.setAttribute('fill','#1a1814');
+  lbl.textContent=c.name;
+
+  cg.appendChild(dot); cg.appendChild(lbl);
+  cg.addEventListener('click', e=>{ e.stopPropagation(); clickCity(c); });
+  g.appendChild(cg);
+});
+
+// Click on SVG background resets
+document.getElementById('map').addEventListener('click', ()=>{ reset(); });
+
+function clickCity(c){
+  if(!pt1){ pt1=c; showPt1(c); }
+  else if(!pt2 && c!==pt1){ pt2=c; showPt2(c); measure(); }
+  else { reset(); pt1=c; showPt1(c); }
+}
+
+function showPt1(c){
+  const el=document.getElementById('pt1');
+  el.setAttribute('cx',c.x); el.setAttribute('cy',c.y); el.setAttribute('opacity','1');
+  document.getElementById('rC1').textContent=c.name;
+  document.getElementById('rC2').textContent='—';
+  document.getElementById('rMapCm').textContent='—';
+  document.getElementById('rRealKm').textContent='—';
+  document.getElementById('working').style.display='none';
+  document.getElementById('pt2').setAttribute('opacity','0');
+  document.getElementById('mLine').setAttribute('opacity','0');
+  document.getElementById('mLabel').setAttribute('opacity','0');
+}
+
+function showPt2(c){
+  const el=document.getElementById('pt2');
+  el.setAttribute('cx',c.x); el.setAttribute('cy',c.y); el.setAttribute('opacity','1');
+  document.getElementById('rC2').textContent=c.name;
+  // Draw line
+  const ml=document.getElementById('mLine');
+  ml.setAttribute('x1',pt1.x); ml.setAttribute('y1',pt1.y);
+  ml.setAttribute('x2',c.x); ml.setAttribute('y2',c.y); ml.setAttribute('opacity','1');
+}
+
+function measure(){
+  // SVG distance
+  const svgDist=Math.sqrt((pt1.x-pt2.x)**2+(pt1.y-pt2.y)**2);
+  // Map cm: scale with RF
+  // At REF_RF (6000000), svgDist/SVG_PER_CM_AT_REF_RF gives cm on that printed map
+  // At a different RF, the same physical map but different label: the cm measurement on map is same
+  // but the RF tells us a different scale. Since this is a digital map, let's say the "map cm"
+  // is what you'd measure on a printed A4 version at the current RF.
+  // Simpler: map_cm = svgDist / SVG_PER_CM_AT_REF_RF (this is fixed to the SVG)
+  // real_km from RF: map_cm * rf / 100000
+  // But we show real distance from haversine (accurate) and map distance from SVG calibration
+  const mapCm = svgDist / SVG_PER_CM_AT_REF_RF;
+  // RF-derived km (as the textbook exercise would have you compute)
+  const rfKm = mapCm * rf / 100000;
+  // Actual haversine km
+  const actualKm = haversine(pt1.lat,pt1.lon,pt2.lat,pt2.lon);
+
+  // Label on map
+  const mx=(pt1.x+pt2.x)/2, my=(pt1.y+pt2.y)/2-10;
+  const ml=document.getElementById('mLabel');
+  ml.setAttribute('x',mx); ml.setAttribute('y',my); ml.setAttribute('opacity','1');
+  ml.textContent=mapCm.toFixed(1)+' cm';
+
+  document.getElementById('rMapCm').textContent=mapCm.toFixed(2)+' cm';
+  document.getElementById('rRealKm').textContent=actualKm.toFixed(0)+' km';
+
+  document.getElementById('working').style.display='block';
+  document.getElementById('working').innerHTML=
+    `<strong>Your calculation:</strong>
+    <span class="eq">Map distance = ${mapCm.toFixed(2)} cm</span>
+    <span class="eq">RF = 1 : ${rf.toLocaleString('en-IN')}</span>
+    <span class="eq">Real = ${mapCm.toFixed(2)} × ${rf.toLocaleString('en-IN')} cm</span>
+    <span class="eq">= ${(mapCm*rf).toFixed(0)} cm ÷ 1,00,000</span>
+    <span class="eq">= ${rfKm.toFixed(0)} km</span>
+    ${Math.abs(rfKm-actualKm)/actualKm<0.05
+      ? `Actual haversine: <strong>${actualKm.toFixed(0)} km</strong> — a close match!`
+      : `Actual haversine distance: <strong>${actualKm.toFixed(0)} km</strong>. The gap is because this map is at a fixed SVG scale — try the RF that makes the numbers match closest.`}`;
+}
+
+function reset(){
+  pt1=null; pt2=null;
+  ['pt1','pt2','mLine','mLabel'].forEach(id=>document.getElementById(id).setAttribute('opacity','0'));
+  ['rC1','rC2','rMapCm','rRealKm'].forEach(id=>document.getElementById(id).textContent='—');
+  document.getElementById('working').style.display='none';
+}
+
+function updateScaleBar(){
+  // Scale bar is 94 SVG units wide. How many km at current RF?
+  const cmOnBar = 94 / SVG_PER_CM_AT_REF_RF; // cm on printed map at ref RF
+  // But displayed scale label should match RF
+  // 94 SVG units = cmOnBar cm = cmOnBar * rf / 100000 km
+  const kmOnBar = cmOnBar * rf / 100000;
+  document.getElementById('scaleMid').textContent = Math.round(kmOnBar/2) + 'km';
+  document.getElementById('scaleRight').textContent = Math.round(kmOnBar) + 'km';
+}
+
+document.querySelectorAll('.rf-btn[data-rf]').forEach(btn=>{
+  btn.onclick=()=>{
+    rf=parseInt(btn.dataset.rf);
+    document.querySelectorAll('.rf-btn[data-rf]').forEach(b=>b.classList.toggle('active',b===btn));
+    updateScaleBar();
+    if(pt2) measure();
+  };
+});
+document.getElementById('btnApplyRF').onclick=()=>{
+  const v=parseInt(document.getElementById('customRF').value);
+  if(v>0){ rf=v; document.querySelectorAll('.rf-btn[data-rf]').forEach(b=>b.classList.remove('active')); updateScaleBar(); if(pt2) measure(); }
+};
+
+updateScaleBar();
+</script>
+</body>
+</html>
